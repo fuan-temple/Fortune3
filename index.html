@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="財氣鑑定所">
+  <meta name="mobile-web-app-capable" content="yes">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
@@ -19,7 +20,6 @@
     @keyframes reveal{from{opacity:0;transform:translateY(20px)scale(.96)}to{opacity:1;transform:translateY(0)scale(1)}}
     @keyframes card-pop{0%{transform:scale(1)}40%{transform:scale(1.18)}70%{transform:scale(.97)}100%{transform:scale(1.07)}}
     @keyframes spin-sym{0%{transform:rotate(0)scale(1)}50%{transform:rotate(200deg)scale(1.4)}100%{transform:rotate(360deg)scale(1)}}
-    @keyframes glow-beat{0%,100%{opacity:.85}50%{opacity:1}}
     @keyframes btn-breathe{0%,100%{box-shadow:var(--b0)}50%{box-shadow:var(--b1)}}
     @keyframes sticker-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,.5),0 -4px 20px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 10px rgba(255,215,0,0),0 -4px 20px rgba(0,0,0,.5)}}
     @keyframes handoff-glow{0%,100%{box-shadow:0 0 20px rgba(105,240,174,.3)}50%{box-shadow:0 0 40px rgba(105,240,174,.6)}}
@@ -150,6 +150,28 @@
   <div id="sticker-status">請先讓客人完成三步驟操作</div>
 </div>
 <script>
+(function(){
+  try{
+    const bg='#6b0000',em='🪙',nm='財氣鑑定所';
+    const icons=[192,512].map(s=>{
+      const cv=document.createElement('canvas');
+      cv.width=cv.height=s;
+      const ctx=cv.getContext('2d');
+      ctx.fillStyle=bg;ctx.fillRect(0,0,s,s);
+      ctx.font=Math.floor(s*.56)+'px serif';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(em,s/2,s/2+s*.03);
+      return{src:cv.toDataURL('image/png'),sizes:s+'x'+s,type:'image/png'};
+    });
+    const link=document.createElement('link');link.rel='manifest';
+    link.href=URL.createObjectURL(new Blob([JSON.stringify({
+      name:nm,short_name:nm,start_url:'.',display:'standalone',
+      background_color:bg,theme_color:bg,icons
+    })],{type:'application/json'}));
+    document.head.appendChild(link);
+  }catch(e){}
+})();
+
 const ZODIACS=[
   {id:"鼠",name:"子鼠",slogan:"財源滾滾",emoji:"🐭",symbol:"🪙",color:"#c8960c",glow:"#ffe57f",bg:"rgba(212,160,23,0.22)"},
   {id:"牛",name:"丑牛",slogan:"牛轉乾坤",emoji:"🐮",symbol:"☯️",color:"#6d4c41",glow:"#d4a017",bg:"rgba(141,110,99,0.22)"},
@@ -243,12 +265,10 @@ async function copySticker(){
   const text=`【車城 財氣封印】\n信眾：${name}　生肖：${sel.name}\n日期：${ds}\n${fortune}`;
   const ok=await crossCopy(text);
   const btn=document.getElementById("sticker-btn"),icon=document.getElementById("s-icon"),lbl=document.getElementById("s-label");
-  if(ok){
-    btn.classList.add("copied");btn.classList.remove("ready");icon.textContent="✅";lbl.textContent="已複製！切換至精臣 APP 貼上";
+  if(ok){btn.classList.add("copied");btn.classList.remove("ready");icon.textContent="✅";lbl.textContent="已複製！切換至精臣 APP 貼上";
     clearTimeout(cpTimer);cpTimer=setTimeout(()=>{btn.classList.remove("copied");btn.classList.add("ready");icon.textContent="🏷️";lbl.textContent="一鍵生成求財貼紙";},3500);
   }else{window.prompt("請手動長按全選複製：",text);}
 }
-if("serviceWorker"in navigator){const sw=`const C='fq-v3';self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(c=>{if(c)return c;return fetch(e.request).then(r=>{if(e.request.method==='GET'&&e.request.url.startsWith('http'))caches.open(C).then(ca=>ca.put(e.request,r.clone()));return r;}).catch(()=>caches.match(e.request));}));});`;navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"application/javascript"}))).catch(()=>{});}
 </script>
 </body>
 </html>
